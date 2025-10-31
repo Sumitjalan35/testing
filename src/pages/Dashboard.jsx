@@ -22,7 +22,7 @@ const JobDetailsCard = ({ jobTitle, matchScore }) => {
       
       setLoading(true);
       try {
-        const response = await fetch('/api/job-details', {
+        const response = await fetch('http://localhost:8000/api/job-details', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

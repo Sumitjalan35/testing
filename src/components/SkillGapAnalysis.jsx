@@ -19,7 +19,7 @@ const SkillGapAnalysis = () => {
     setError('');
 
     try {
-      const response = await fetch('/api/analyze-skills', {
+      const response = await fetch('http://localhost:8000/api/analyze-skills', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -196,7 +196,7 @@ const ChatInterface = ({ analysisContext }) => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/skill-chat', {
+      const response = await fetch('http://localhost:8000/api/skill-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

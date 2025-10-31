@@ -597,7 +597,7 @@ Be supportive, professional, and encouraging. Keep responses concise but helpful
             return f"Entry-level {job_title} role involving coding, testing, and learning new technologies under mentorship."
 
         try:
-            prompt = f"Write a brief 2-3 sentence job description for a {job_title} role. Focus on main responsibilities and keep it concise for a UI card."
+            prompt = f"Write a brief 1 line sentence job description for a {job_title} role. Focus on main responsibilities and keep it concise for a UI card. It should not exceed 25 words and should be meaningful."
             response = gemini_model.invoke(prompt)
 
             text = response.text() if callable(response.text) else response.text
@@ -1048,7 +1048,6 @@ def _generate_interviewer_response(user_message: str, session: Dict) -> str:
         llm = ChatVertexAI(
             model="gemini-2.5-flash",
             temperature=0.7,
-            max_tokens=2000,
             max_retries=2,
         )
 
