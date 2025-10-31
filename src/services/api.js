@@ -1,5 +1,5 @@
 // API service for communicating with the backend
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = import.meta?.env?.VITE_API_BASE_URL || 'http://localhost:8000';
 
 class ApiService {
   constructor() {
@@ -85,6 +85,32 @@ class ApiService {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     return response.json();
+  }
+
+  // Interview: start session
+  async startInterview({ role, num_questions, difficulty }) {
+    return this.makeRequest('/api/interview/start', {
+      method: 'POST',
+      body: JSON.stringify({ role, num_questions, difficulty }),
+    });
+  }
+
+  // Interview: chat
+  async interviewChat({ session_id, message }) {
+    return this.makeRequest('/api/interview/chat', {
+      method: 'POST',
+      body: JSON.stringify({ session_id, message }),
+    });
+  }
+
+  // Interview: history
+  async getInterviewHistory(sessionId) {
+    return this.makeRequest(`/api/interview/history/${sessionId}`);
+  }
+
+  // Interview: delete session
+  async deleteInterviewSession(sessionId) {
+    return this.makeRequest(`/api/interview/session/${sessionId}`, { method: 'DELETE' });
   }
 }
 

@@ -460,7 +460,8 @@ const Dashboard = () => {
             title: 'Interview Question Generator',
             description: 'Practice with personalized interview questions based on your target role',
             icon: MessageCircle,
-            color: 'bg-green-100 text-green-600'
+            color: 'bg-green-100 text-green-600',
+            action: () => navigate('/interview-generator')
           },
           {
             title: 'Cover Letter Assistant',

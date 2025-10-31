@@ -50,6 +50,9 @@ else:
 # Simple in-memory chat history storage
 chat_history: List[Dict[str, str]] = []
 
+# In-memory storage for interview sessions
+interview_sessions: Dict[str, Dict] = {}
+
 # Pydantic Models for Student Career Advisory
 class CareerAdvisoryRequest(BaseModel):
     """Request model for student career advisory API"""
@@ -998,6 +1001,73 @@ Guidelines:
         print(f"❌ Error generating skill chat response with Gemini: {e}")
         return "I'm here to help with your skill gap analysis! I can provide career advice and learning recommendations. How can I assist you today?"
 
+# ==================================
+# Interview Question Generator API
+# ==================================
+
+class InterviewSetup(BaseModel):
+    role: str
+    num_questions: int
+    difficulty: str
+
+class InterviewChatMessage(BaseModel):
+    session_id: str
+    message: str
+
+class InterviewChatResponse(BaseModel):
+    response: str
+    session_id: str
+    is_complete: bool
+    history: List[Dict[str, str]]
+
+def _get_interview_system_prompt(role: str, num_questions: int, difficulty: str) -> str:
+    difficulty_desc = {
+        "easy": "beginner-level, focusing on fundamental concepts and basic knowledge",
+        "medium": "intermediate-level, focusing on practical scenarios and real-world application",
+        "hard": "advanced-level, focusing on complex problem-solving, system design, and deep expertise",
+    }
+    return (
+        f"You are conducting a mock interview for a {role} position. This is a {difficulty_desc.get(difficulty, 'intermediate-level')} interview.\n\n"
+        f"Your role as the interviewer:\n"
+        f"1. Ask EXACTLY {num_questions} interview questions, one at a time\n"
+        f"2. Wait for the candidate's response before asking the next question\n"
+        f"3. Keep track of which question you're on (e.g., 'Question 1 of {num_questions}')\n"
+        f"4. Ask relevant questions for a {role} position at {difficulty} difficulty\n"
+        f"5. After all {num_questions} questions are answered, provide comprehensive feedback\n\n"
+        f"Interview Format:\n"
+        f"- Start by greeting the candidate and asking the first question\n"
+        f"- After each answer, acknowledge it briefly and ask the next question\n"
+        f"- Mix technical, behavioral, and situational questions appropriate for a {role}\n"
+        f"- When all questions are answered, provide:\n  * Overall performance assessment\n  * Key strengths demonstrated\n  * Areas for improvement\n  * Specific suggestions for each answer\n  * Encouraging closing remarks\n\n"
+        f"Be professional, supportive, and constructive throughout the interview."
+    )
+
+def _generate_interviewer_response(user_message: str, session: Dict) -> str:
+    try:
+        # Use Vertex AI chat model for consistency with the rest of the API
+        llm = ChatVertexAI(
+            model="gemini-2.5-flash",
+            temperature=0.7,
+            max_tokens=2000,
+            max_retries=2,
+        )
+
+        system_prompt = session["system_prompt"]
+
+        # Build conversation with alternating roles
+        conversation = system_prompt + "\n\nConversation:\n"
+        for msg in session.get("chat_history", [])[-20:]:
+            conversation += f"Interviewer: {msg.get('interviewer', '')}\n"
+            conversation += f"Candidate: {msg.get('candidate', '')}\n"
+        conversation += f"Candidate: {user_message}\nInterviewer:"
+
+        response = llm.invoke(conversation)
+        text = response.content.strip() if hasattr(response, "content") else str(response).strip()
+        return text or "Let's continue. Could you elaborate more on your previous answer?"
+    except Exception as e:
+        print(f"Interview response error: {e}")
+        return "I apologize, I'm having trouble generating the next question right now. Please try again."
+
 # Controller/Handler Functions (for FastAPI endpoints)
 def create_career_advisory_service():
     """Factory function to create career advisory service"""
@@ -1276,6 +1346,120 @@ async def skill_chat(request: SkillChatRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
+
+# -----------------------------
+# Interview Endpoints
+# -----------------------------
+@app.post("/api/interview/start")
+async def start_interview_endpoint(setup: InterviewSetup):
+    try:
+        if setup.num_questions < 1 or setup.num_questions > 20:
+            raise HTTPException(status_code=400, detail="Number of questions must be between 1 and 20")
+        if not setup.role or len(setup.role.strip()) < 2:
+            raise HTTPException(status_code=400, detail="Role must be specified")
+
+        import uuid
+        session_id = str(uuid.uuid4())
+
+        system_prompt = _get_interview_system_prompt(setup.role, setup.num_questions, setup.difficulty)
+
+        interview_sessions[session_id] = {
+            "role": setup.role.strip(),
+            "num_questions": setup.num_questions,
+            "difficulty": setup.difficulty.strip().lower(),
+            "system_prompt": system_prompt,
+            "chat_history": [],
+            "is_complete": False,
+        }
+
+        initial_response = _generate_interviewer_response("", interview_sessions[session_id])
+        interview_sessions[session_id]["chat_history"].append({
+            "interviewer": initial_response,
+            "candidate": "",
+        })
+
+        return {
+            "session_id": session_id,
+            "message": initial_response,
+            "role": interview_sessions[session_id]["role"],
+            "num_questions": interview_sessions[session_id]["num_questions"],
+            "difficulty": interview_sessions[session_id]["difficulty"],
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error starting interview: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to start interview: {str(e)}")
+
+@app.post("/api/interview/chat", response_model=InterviewChatResponse)
+async def interview_chat_endpoint(message: InterviewChatMessage):
+    try:
+        session_id = message.session_id
+        if session_id not in interview_sessions:
+            raise HTTPException(status_code=404, detail="Interview session not found")
+
+        session = interview_sessions[session_id]
+        user_message = message.message.strip()
+        if not user_message:
+            raise HTTPException(status_code=400, detail="Message cannot be empty")
+
+        bot_response = _generate_interviewer_response(user_message, session)
+
+        if session["chat_history"] and session["chat_history"][-1].get("candidate", "") == "":
+            session["chat_history"][-1]["candidate"] = user_message
+
+        session["chat_history"].append({
+            "interviewer": bot_response,
+            "candidate": "",
+        })
+
+        completion_keywords = [
+            "feedback",
+            "conclude",
+            "final thoughts",
+            "summary of your performance",
+            "overall assessment",
+            "closing remarks",
+        ]
+        is_complete = any(k in bot_response.lower() for k in completion_keywords)
+        if is_complete:
+            session["is_complete"] = True
+
+        if len(session["chat_history"]) > 50:
+            session["chat_history"].pop(0)
+
+        return InterviewChatResponse(
+            response=bot_response,
+            session_id=session_id,
+            is_complete=session["is_complete"],
+            history=session["chat_history"],
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in interview chat: {e}")
+        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
+
+@app.get("/api/interview/history/{session_id}")
+async def get_interview_history(session_id: str):
+    if session_id not in interview_sessions:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    session = interview_sessions[session_id]
+    return {
+        "session_id": session_id,
+        "role": session["role"],
+        "num_questions": session["num_questions"],
+        "difficulty": session["difficulty"],
+        "chat_history": session["chat_history"],
+        "is_complete": session["is_complete"],
+    }
+
+@app.delete("/api/interview/session/{session_id}")
+async def delete_interview_session(session_id: str):
+    if session_id in interview_sessions:
+        del interview_sessions[session_id]
+        return {"message": "Session deleted successfully"}
+    raise HTTPException(status_code=404, detail="Session not found")
 
 # ==================================
 # CV Reviewer (Resume Review) API

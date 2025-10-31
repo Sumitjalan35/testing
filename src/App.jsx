@@ -9,6 +9,7 @@ import SummaryPage from './pages/SummaryPage';
 import JobMatcher from './pages/JobMatcher';
 import CareerChat from './pages/CareerChat';
 import ResumeReviewer from './pages/ResumeReviewer';
+import InterviewGenerator from './pages/InterviewGenerator';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             <Route path="/job-matcher" element={<JobMatcher />} />
             <Route path="/career-chat" element={<CareerChat />} />
             <Route path="/resume-reviewer" element={<ResumeReviewer />} />
+            <Route path="/interview-generator" element={<InterviewGenerator />} />
           </Routes>
         </div>
       </Router>
