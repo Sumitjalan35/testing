@@ -1,50 +1,109 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, Send, Trash2, MessageCircle, Bot, User, 
-  Loader2, Sparkles, Brain, Target, TrendingUp
-} from 'lucide-react';
+import { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
+import {
+  ArrowLeft,
+  Send,
+  Trash2,
+  MessageCircle,
+  Bot,
+  User,
+  Loader2,
+  Sparkles,
+  Brain,
+  Target,
+  TrendingUp,
+} from 'lucide-react'
+
+// --- NEW COMPONENT: MarkdownRenderer for basic formatting ---
+const MarkdownRenderer = ({ content }) => {
+  if (!content) return null
+
+  // 1. Replace double asterisks (**) with strong tags (<b> for simplicity)
+  let formattedContent = content.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+
+  // 2. Split content by line breaks to handle lists/paragraphs
+  const lines = formattedContent.split('\n')
+
+  return (
+    <div className="text-sm text-secondary-700">
+      {lines.map((line, index) => {
+        if (!line.trim()) return null
+
+        // Check for Markdown list items (* )
+        if (line.startsWith('* ')) {
+          // Render as a list item
+          // Note: This simple structure might need ul/li wrapping for perfect semantic HTML
+          return (
+            <div
+              key={index}
+              className="flex items-start mt-1 pl-4 before:content-['\2022'] before:mr-2 before:text-secondary-600"
+            >
+              <span
+                dangerouslySetInnerHTML={{ __html: line.substring(2).trim() }}
+              />
+            </div>
+          )
+        }
+
+        // Render as a paragraph or single line (using dangerouslySetInnerHTML to process <b> tags)
+        return (
+          <p
+            key={index}
+            className={index > 0 ? 'mt-2' : ''}
+            dangerouslySetInnerHTML={{ __html: line.trim() }}
+          />
+        )
+      })}
+    </div>
+  )
+}
+// ------------------------------------------------------------------
 
 const CareerChat = () => {
-  const navigate = useNavigate();
-  const [messages, setMessages] = useState([]);
-  const [currentMessage, setCurrentMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null);
+  const navigate = useNavigate()
+  const [messages, setMessages] = useState([])
+  const [currentMessage, setCurrentMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const messagesEndRef = useRef(null)
 
   // Auto-scroll to bottom when new messages are added
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    scrollToBottom()
+  }, [messages])
 
   // Add welcome message on first load
   useEffect(() => {
-    setMessages([{
-      user: '',
-      bot: "Hi! I'm your AI career guidance assistant. I'm here to help you with career advice, job search tips, skill development, and professional growth. How can I assist you today?",
-      timestamp: new Date().toISOString()
-    }]);
-  }, []);
+    setMessages([
+      {
+        user: '',
+        bot: "Hi! I'm your AI career guidance assistant. I'm here to help you with career advice, job search tips, skill development, and professional growth. How can I assist you today?",
+        timestamp: new Date().toISOString(),
+      },
+    ])
+  }, [])
 
   const sendMessage = async () => {
-    if (!currentMessage.trim() || isLoading) return;
+    if (!currentMessage.trim() || isLoading) return
 
-    const userMessage = currentMessage.trim();
-    setCurrentMessage('');
-    setIsLoading(true);
+    const userMessage = currentMessage.trim()
+    setCurrentMessage('')
+    setIsLoading(true)
 
     try {
       // Add user message to UI immediately
-      setMessages(prev => [...prev, { 
-        user: userMessage, 
-        bot: '', 
-        timestamp: new Date().toISOString() 
-      }]);
+      setMessages(prev => [
+        ...prev,
+        {
+          user: userMessage,
+          bot: '',
+          timestamp: new Date().toISOString(),
+        },
+      ])
 
       // Call FastAPI backend
       const response = await fetch('http://localhost:8000/chat', {
@@ -53,69 +112,70 @@ const CareerChat = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ message: userMessage }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json();
+      const data = await response.json()
 
       // Update messages with bot response
       setMessages(prev => {
-        const newMessages = [...prev];
+        const newMessages = [...prev]
         newMessages[newMessages.length - 1] = {
           user: userMessage,
           bot: data.response,
-          timestamp: new Date().toISOString()
-        };
-        return newMessages;
-      });
-
+          timestamp: new Date().toISOString(),
+        }
+        return newMessages
+      })
     } catch (error) {
-      console.error('Error sending message:', error);
-      
+      console.error('Error sending message:', error)
+
       // Update with error message
       setMessages(prev => {
-        const newMessages = [...prev];
+        const newMessages = [...prev]
         newMessages[newMessages.length - 1] = {
           user: userMessage,
           bot: "Sorry, I'm having trouble connecting to the server. Please make sure the backend is running on http://localhost:8000 and try again.",
-          timestamp: new Date().toISOString()
-        };
-        return newMessages;
-      });
+          timestamp: new Date().toISOString(),
+        }
+        return newMessages
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = e => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+      e.preventDefault()
+      sendMessage()
     }
-  };
+  }
 
   const clearChat = async () => {
     try {
-      await fetch('http://localhost:8000/chat/history', { method: 'DELETE' });
-      setMessages([{
-        user: '',
-        bot: "Chat history cleared! How can I help you with your career today?",
-        timestamp: new Date().toISOString()
-      }]);
+      await fetch('http://localhost:8000/chat/history', { method: 'DELETE' })
+      setMessages([
+        {
+          user: '',
+          bot: 'Chat history cleared! How can I help you with your career today?',
+          timestamp: new Date().toISOString(),
+        },
+      ])
     } catch (error) {
-      console.error('Error clearing chat:', error);
+      console.error('Error clearing chat:', error)
     }
-  };
+  }
 
-  const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
+  const formatTime = timestamp => {
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
@@ -134,8 +194,12 @@ const CareerChat = () => {
                 <Brain className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-secondary-800">Career AI Chat</h1>
-                <p className="text-sm text-secondary-600">Your personal career guidance assistant</p>
+                <h1 className="text-xl font-bold text-secondary-800">
+                  Career AI Chat
+                </h1>
+                <p className="text-sm text-secondary-600">
+                  Your personal career guidance assistant
+                </p>
               </div>
             </div>
           </div>
@@ -169,7 +233,9 @@ const CareerChat = () => {
                         <User className="w-4 h-4 mt-1 flex-shrink-0" />
                         <div>
                           <p className="text-sm font-medium">{msg.user}</p>
-                          <p className="text-xs opacity-75 mt-1">{formatTime(msg.timestamp)}</p>
+                          <p className="text-xs opacity-75 mt-1">
+                            {formatTime(msg.timestamp)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -191,11 +257,16 @@ const CareerChat = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
-                            <span className="text-sm font-medium text-secondary-800">Career AI</span>
+                            <span className="text-sm font-medium text-secondary-800">
+                              Career AI
+                            </span>
                             <Sparkles className="w-3 h-3 text-purple-500" />
                           </div>
-                          <p className="text-sm text-secondary-700 whitespace-pre-wrap">{msg.bot}</p>
-                          <p className="text-xs text-secondary-500 mt-1">{formatTime(msg.timestamp)}</p>
+                          {/* ⚠️ FIX APPLIED HERE: Using MarkdownRenderer instead of a plain <p> tag */}
+                          <MarkdownRenderer content={msg.bot} />
+                          <p className="text-xs text-secondary-500 mt-1">
+                            {formatTime(msg.timestamp)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -219,7 +290,9 @@ const CareerChat = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
-                    <span className="text-sm text-secondary-600">AI is thinking...</span>
+                    <span className="text-sm text-secondary-600">
+                      AI is thinking...
+                    </span>
                   </div>
                 </div>
               </div>
@@ -235,7 +308,7 @@ const CareerChat = () => {
             <div className="flex-1">
               <textarea
                 value={currentMessage}
-                onChange={(e) => setCurrentMessage(e.target.value)}
+                onChange={e => setCurrentMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask me about careers, job search, skills, or professional growth..."
                 className="w-full px-4 py-3 border border-secondary-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
@@ -256,14 +329,14 @@ const CareerChat = () => {
               <span className="hidden sm:inline">Send</span>
             </button>
           </div>
-          
+
           {/* Quick Actions */}
           <div className="mt-3 flex flex-wrap gap-2">
             {[
-              "What career paths suit my skills?",
-              "How to improve my resume?",
-              "Interview preparation tips",
-              "Salary negotiation advice"
+              'What career paths suit my skills?',
+              'How to improve my resume?',
+              'Interview preparation tips',
+              'Salary negotiation advice',
             ].map((suggestion, index) => (
               <button
                 key={index}
@@ -277,9 +350,7 @@ const CareerChat = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default CareerChat;
-
-
+export default CareerChat
