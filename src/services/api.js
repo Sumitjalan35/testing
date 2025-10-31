@@ -1,5 +1,5 @@
 // API service for communicating with the backend
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://localhost:8000';
 
 class ApiService {
   constructor() {

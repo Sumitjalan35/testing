@@ -196,7 +196,7 @@ const ChatInterface = ({ analysisContext }) => {
     setLoading(true);
 
     try {
-      const response = await fetch('https://genai-backend-458973355291.us-central1.run.app/api/skill-chat', {
+      const response = await fetch('/api/skill-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

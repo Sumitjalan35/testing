@@ -270,32 +270,32 @@ ACHIEVEMENTS AND EXPERIENCE:
 
 Please provide detailed advice covering:
 
-## 🚀 CAREER PATH RECOMMENDATIONS
+## CAREER PATH RECOMMENDATIONS
 - Top 3-5 suitable career options with specific job roles
 - Growth prospects and industry trends
 - Future opportunities in the field
 
-## 💡 SKILLS DEVELOPMENT PLAN
+## SKILLS DEVELOPMENT PLAN
 - Essential technical skills to acquire
 - Important soft skills to develop
 - Recommended learning resources and timeline
 
-## 📚 EDUCATION & CERTIFICATION
+## EDUCATION & CERTIFICATION
 - Suitable courses and certifications within budget
 - Institution recommendations
 - Alternative learning paths
 
-## 🎯 COMPETITIVE EXAM STRATEGY
+## COMPETITIVE EXAM STRATEGY
 - Relevant exams for chosen career path
 - Preparation strategy and timeline
 - Best resources and coaching options
 
-## 📋 ACTION PLAN
+## ACTION PLAN
 - Short-term goals (3-6 months)
 - Medium-term goals (6-18 months)
 - Long-term milestones (2-5 years)
 
-## 📊 INDUSTRY INSIGHTS
+## INDUSTRY INSIGHTS
 - Market trends and salary expectations
 - Networking opportunities
 - Career progression paths
@@ -340,49 +340,49 @@ CURRENT CHALLENGES:
 
 Please provide detailed professional career advice covering:
 
-## 🚀 CAREER ADVANCEMENT STRATEGY
+## CAREER ADVANCEMENT STRATEGY
 - Analysis of current position and growth opportunities
 - Strategic career moves for next 2-5 years
 - Leadership development recommendations
 - Industry positioning and personal branding
 
-## 💡 SKILL DEVELOPMENT ROADMAP
+## SKILL DEVELOPMENT ROADMAP
 - Critical skills to develop based on career goals
 - Technical competencies to acquire or strengthen
 - Leadership and management skills enhancement
 - Industry-specific certifications and training
 
-## 🔄 TRANSITION PLANNING
+## TRANSITION PLANNING
 - Steps for career transition or industry change
 - Risk mitigation strategies
 - Timeline and milestones for transition
 - Networking and relationship building
 
-## 📚 PROFESSIONAL DEVELOPMENT
+## PROFESSIONAL DEVELOPMENT
 - Learning opportunities and resources
 - Mentorship and coaching recommendations
 - Professional certifications and courses
 - Conference and networking events
 
-## 💰 COMPENSATION & NEGOTIATION
+## COMPENSATION & NEGOTIATION
 - Salary benchmarking and expectations
 - Negotiation strategies for promotions/new roles
 - Benefits and compensation package optimization
 - Performance review preparation
 
-## 📊 INDUSTRY INSIGHTS & MARKET TRENDS
+## INDUSTRY INSIGHTS & MARKET TRENDS
 - Current market conditions in target industries
 - Emerging opportunities and threats
 - Future skill requirements and trends
 - Company analysis and cultural fit assessment
 
-## 📋 ACTION PLAN
+## ACTION PLAN
 - Immediate actions (next 30 days)
 - Short-term goals (3-6 months)
 - Medium-term objectives (6-18 months)
 - Long-term career milestones (2-5 years)
 
-## 🎯 CHALLENGE RESOLUTION
+## CHALLENGE RESOLUTION
 - Specific strategies to address current challenges
 - Risk management and contingency planning
 - Work-life balance optimization
@@ -684,7 +684,7 @@ Be supportive, professional, and encouraging. Keep responses concise but helpful
 
     def _generate_quota_exceeded_response(self) -> str:
         """Generate a response when API quota is exceeded"""
-        return """## 🚀 CAREER PATH RECOMMENDATIONS
+        return """## CAREER PATH RECOMMENDATIONS
 
 Based on your profile, here are some excellent career paths:
 
@@ -694,7 +694,7 @@ Based on your profile, here are some excellent career paths:
 * **AI/ML Engineer:** Emerging field with high potential
 * **Product Manager:** Bridge between technology and business
 
-## 💡 SKILLS DEVELOPMENT PLAN
+## SKILLS DEVELOPMENT PLAN
 
 **Essential Technical Skills:**
 * Programming languages (Python, JavaScript, Java, C++)
@@ -710,7 +710,7 @@ Based on your profile, here are some excellent career paths:
 * Leadership and project management
 * Continuous learning mindset
 
-## 📚 EDUCATION & CERTIFICATION
+## EDUCATION & CERTIFICATION
 
 **Recommended Learning Path:**
 * Online courses and bootcamps (Coursera, Udemy, edX)
@@ -719,7 +719,7 @@ Based on your profile, here are some excellent career paths:
 * Internships and real-world experience
 * Open source contributions
 
-## 📋 ACTION PLAN
+## ACTION PLAN
 
 **Short-term Goals (3-6 months):**
 * Complete foundational programming courses
@@ -739,7 +739,7 @@ Based on your profile, here are some excellent career paths:
 * Advance to senior/leadership roles
 * Consider specialization or entrepreneurship
 
-## 📊 INDUSTRY INSIGHTS
+## INDUSTRY INSIGHTS
 
 **Market Trends:**
 * Tech industry continues rapid growth
@@ -760,7 +760,7 @@ Based on your profile, here are some excellent career paths:
 
 ---
 
-**⚠️ Note:** This response was generated using fallback content due to API quota limits. For more personalized and detailed advice, please try again later or contact our support team."""
+**Note:** This response was generated using fallback content due to API quota limits. For more personalized and detailed advice, please try again later or contact our support team."""
 
     def _generate_mock_response(self) -> str:
         """Generate a mock response when LLM fails"""
@@ -769,14 +769,14 @@ CAREER ADVISORY RESPONSE (Mock Response - LLM Connection Failed)
 
 Based on your profile, here are preliminary recommendations:
 
-🎯 CAREER PATH RECOMMENDATIONS:
+CAREER PATH RECOMMENDATIONS:
 1. Software Engineering - High demand in tech sector
 2. Data Science & Analytics - Growing field with good prospects
 3. Product Management - Bridge between tech and business
 4. Cybersecurity - Critical need in all industries
 5. AI/ML Engineering - Future-focused career path
 
-💡 SKILLS DEVELOPMENT PLAN:
+SKILLS DEVELOPMENT PLAN:
 Technical Skills to Develop:
 - Programming: Python, JavaScript, SQL
 - Data Analysis: Excel, Tableau, Power BI
@@ -789,13 +789,13 @@ Soft Skills to Focus:
 - Project management
 - Leadership and teamwork
 
-📚 EDUCATION & CERTIFICATION:
+EDUCATION & CERTIFICATION:
 - Consider Computer Science or related engineering degree
 - Online certifications: Coursera, edX, Udemy courses
 - Professional certifications: AWS, Google Cloud, Microsoft
 - Bootcamps for intensive skill building
 
-📋 ACTION PLAN:
+ACTION PLAN:
 Short-term (3-6 months):
 - Complete 2-3 online programming courses
 - Build 2-3 portfolio projects
@@ -811,7 +811,7 @@ Long-term (2-5 years):
 - Pursue advanced certifications
 - Consider specialization in AI/ML or cybersecurity
 
-💰 INDUSTRY INSIGHTS:
+INDUSTRY INSIGHTS:
 - Starting salaries: 3-8 LPA for freshers
 - Mid-level (3-5 years): 8-18 LPA
 - Senior level (5+ years): 15-35+ LPA
@@ -1042,8 +1042,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 # FastAPI Endpoints
 @app.get("/")
