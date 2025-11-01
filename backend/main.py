@@ -23,7 +23,6 @@ import PyPDF2
 vertexai.init(project="careerai-476016", location="us-central1")
 
 # Configuration
-GEMINI_API_KEY = "AIzaSyBmknnBd4p_6nt81OMHcKnlj4SqPeUg0pk"
 gemini_model  = ChatVertexAI(
                 model="gemini-2.5-flash",
                 temperature=0.7,
