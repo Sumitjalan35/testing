@@ -29,7 +29,7 @@ gemini_model  = ChatVertexAI(
                 max_retries=2
             )
 
-# Configuration job details generation
+# Configuration for job details generation
 try:
     gemini_model  = ChatVertexAI(
         model="gemini-2.5-flash",
