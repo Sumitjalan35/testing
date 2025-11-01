@@ -29,22 +29,17 @@ gemini_model  = ChatVertexAI(
                 max_retries=2
             )
 
-# Configure Gemini API for job details generation
-if GEMINI_API_KEY and GEMINI_API_KEY != "your_gemini_api_key_here":
-    try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        gemini_model  = ChatVertexAI(
-                model="gemini-2.5-flash",
-                temperature=0.7,
-                max_retries=2
-            )
-        print("✅ Gemini 2.5-flash model initialized for job details")
-    except Exception as e:
-        print(f"❌ Error initializing Gemini model: {e}")
-        gemini_model = None
-else:
+# Configuration job details generation
+try:
+    gemini_model  = ChatVertexAI(
+        model="gemini-2.5-flash",
+        temperature=0.7,
+        max_retries=2
+    )
+    print("✅ Gemini 2.5-flash model initialized for job details")
+except Exception as e:
+    print(f"❌ Error initializing Gemini model: {e}")
     gemini_model = None
-    print("ℹ️ No valid Gemini API key found for job details")
 
 # Simple in-memory chat history storage
 chat_history: List[Dict[str, str]] = []
